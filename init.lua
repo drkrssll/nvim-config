@@ -103,6 +103,15 @@ vim.opt.wrap = false
 vim.g.have_nerd_font = false
 local M = {}
 
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'sql',
+  callback = function()
+    vim.opt_local.formatoptions:remove 't'
+    vim.opt_local.formatoptions:append 'l'
+    vim.opt_local.formatexpr = nil
+  end,
+})
+
 -- Define the color palette
 local palette = {
   amber_shadow = '#0d1117',
@@ -361,6 +370,7 @@ vim.opt.scrolloff = 10
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<Space>e', '<cmd>NvimTreeToggle<CR>')
+vim.keymap.set('n', '<C-m>', '<cmd>lua vim.diagnostic.open_float()<CR>')
 vim.keymap.set('n', '<Space>c', '<cmd>tabc<CR>')
 vim.keymap.set('n', '<Space>b', '<cmd>tabn<CR>')
 vim.keymap.set('n', '<Space>o', '<cmd>ToggleTerm<CR>')
@@ -432,29 +442,17 @@ require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
   'MeanderingProgrammer/render-markdown.nvim',
-  'rust-lang/rust.vim',
+  { 'mrcjkb/rustaceanvim', version = '^4', lazy = false, ['rust-analyzer'] = {
+    cargo = {
+      allFeatures = true,
+    },
+  } },
   { 'ellisonleao/glow.nvim', config = true, cmd = 'Glow' },
   {
     'nvim-lualine/lualine.nvim',
     requires = { 'nvim-tree/nvim-web-devicons', opt = true },
     config = function()
       require('lualine').setup {
-        --options = {
-        --theme = {
-
-        --  normal = { c = { fg = '#D42B29', bg = '#282828' } },
-        --  --normal = { c = { fg = '#ebdbb2', bg = '#282828' } },
-        --  --inactive = { c = { fg = '#7c6f64', bg = '#3c3836' } },
-        --},
-        --theme = {
-        --  normal = { a = { fg = '#ebdbb2', bg = '#E92825', gui = 'bold' } }, -- Normal mode
-        --  insert = { a = { fg = '#E92825', bg = '#000000', gui = 'bold' } }, -- Insert mode
-        --  visual = { a = { fg = '#000000', bg = '#E92825', gui = 'bold' } }, -- Visual mode
-        --  replace = { a = { fg = '#000000', bg = '#E92825', gui = 'bold' } }, -- Replace mode
-        --  command = { a = { fg = '#000000', bg = '#E92825', gui = 'bold' } }, -- Command mode
-        --},
-        --},
-
         sections = {
           lualine_c = {
             -- Other sections you want in lualine_c
@@ -1032,7 +1030,8 @@ require('lazy').setup({
           ['<C-p>'] = cmp.mapping.select_prev_item(),
 
           -- Scroll the documentation window [b]ack / [f]orward
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
 
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
