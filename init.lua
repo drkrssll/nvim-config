@@ -237,23 +237,94 @@ require('lazy').setup({
   'elkowar/yuck.vim',
   'github/copilot.vim',
   {
+    --
+    -- Plugin for top tier code completion in Rust
+    --
     'mrcjkb/rustaceanvim',
     version = '^5',
     lazy = false,
   },
-  'nvim-java/nvim-java',
-  'MeanderingProgrammer/render-markdown.nvim',
   {
-    'cordx56/rustowl',
-    dependencies = { 'neovim/nvim-lspconfig' },
-    config = function()
-      local lspconfig = require 'lspconfig'
-      lspconfig.rustowl.setup {
-        trigger = {
-          hover = true,
+    --
+    -- Plugin for Cursor like IDE experience in Nvim
+    --
+    'yetone/avante.nvim',
+    event = 'VeryLazy',
+    version = false, -- Never set this value to "*"! Never!
+    opts = {
+      provider = 'deepseek',
+      vendors = {
+        deepseek = {
+          __inherited_from = 'openai',
+          api_key_name = 'DEEPSEEK_API_KEY',
+          endpoint = 'https://api.deepseek.com',
+          model = 'deepseek-chat',
+          max_tokens = 8192,
         },
-      }
-    end,
+      },
+    }, -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+    build = 'make',
+    -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+      'stevearc/dressing.nvim',
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+      --- The below dependencies are optional,
+      'echasnovski/mini.pick', -- for file_selector provider mini.pick
+      'nvim-telescope/telescope.nvim', -- for file_selector provider telescope
+      'hrsh7th/nvim-cmp', -- autocompletion for avante commands and mentions
+      'ibhagwan/fzf-lua', -- for file_selector provider fzf
+      'nvim-tree/nvim-web-devicons', -- or echasnovski/mini.icons
+      'zbirenbaum/copilot.lua', -- for providers='copilot'
+      {
+        -- support for image pasting
+        'HakonHarnes/img-clip.nvim',
+        event = 'VeryLazy',
+        opts = {
+          -- recommended settings
+          default = {
+            embed_image_as_base64 = false,
+            prompt_for_file_name = false,
+            drag_and_drop = {
+              insert_mode = true,
+            },
+            -- required for Windows users
+            use_absolute_path = true,
+          },
+        },
+      },
+      {
+        -- Make sure to set this up properly if you have lazy=true
+        'MeanderingProgrammer/render-markdown.nvim',
+        opts = {
+          file_types = { 'markdown', 'Avante' },
+        },
+        ft = { 'markdown', 'Avante' },
+      },
+    },
+  },
+  {
+    --
+    -- Plugin for visualizing lifetimes in rust
+    --
+    'cordx56/rustowl',
+    version = '*', -- Latest stable version
+    build = 'cargo install --path . --locked',
+    lazy = false, -- This plugin is already lazy
+    opts = {
+      client = {
+        on_attach = function(_, buffer)
+          vim.keymap.set('n', '<leader>o', function()
+            require('rustowl').toggle(buffer)
+          end, { buffer = buffer, desc = 'Toggle RustOwl' })
+        end,
+      },
+    },
+  },
+  {
+    'nvim-java/nvim-java',
+    'MeanderingProgrammer/render-markdown.nvim',
   },
   { 'ellisonleao/glow.nvim', config = true, cmd = 'Glow' },
   {
